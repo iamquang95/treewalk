@@ -1,5 +1,15 @@
 use walkdir::{DirEntry, WalkDir};
 
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// path
+    #[arg(short, long)]
+    path: String,
+}
+
 fn is_dir(entry: &DirEntry) -> anyhow::Result<bool> {
     let metadata = entry.metadata()?;
     Ok(metadata.is_dir())
@@ -23,7 +33,7 @@ fn traverse_dir(path: &str, prefix: &str, depth: u64) -> anyhow::Result<()> {
 }
 
 fn main() -> anyhow::Result<()> {
-    let src = ".";
-    traverse_dir(src, "", 0)?;
+    let args = Args::parse();
+    traverse_dir(&args.path, "", 0)?;
     Ok(())
 }
