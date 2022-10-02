@@ -1,3 +1,3 @@
-# todo-rs
+# treewalk
 
-A simple TODO application written in rust
+A `tree` written in rust, with some more features
