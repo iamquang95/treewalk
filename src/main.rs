@@ -1,3 +1,5 @@
+mod tree;
+
 use walkdir::{DirEntry, WalkDir};
 
 use clap::Parser;
