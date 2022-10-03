@@ -1,14 +1,17 @@
+mod dir;
 mod tree;
 
 use walkdir::{DirEntry, WalkDir};
 
+use crate::dir::Dir;
+use crate::tree::{Arena, NodeId};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// path
-    #[arg(short, long)]
+    #[arg(short, long, default_value_t = String::from("."))]
     path: String,
 }
 
@@ -17,18 +20,26 @@ fn is_dir(entry: &DirEntry) -> anyhow::Result<bool> {
     Ok(metadata.is_dir())
 }
 
-fn traverse_dir(path: &str, prefix: &str, depth: u64) -> anyhow::Result<()> {
+fn traverse_dir(
+    tree: &mut Arena<Dir>,
+    node_id: NodeId,
+    path: &str,
+    depth: u64,
+) -> anyhow::Result<()> {
     let dir = WalkDir::new(path).max_depth(1);
     for entry in dir {
         let entry = entry?;
-        if is_dir(&entry)? {
+        let is_folder = is_dir(&entry)?;
+        let file_name = entry.file_name().to_str().unwrap();
+
+        let new_dir = Dir::new(file_name.to_owned(), is_folder, true);
+        let new_node_id = tree.new_node(new_dir, node_id)?;
+
+        if is_folder {
             let entry_path = format!("{}", entry.path().display());
-            println!("{} {}", prefix, &entry.file_name().to_str().unwrap());
             if &entry_path != &path {
-                traverse_dir(&entry_path, &format!("{}--", prefix), depth + 1)?;
+                traverse_dir(tree, new_node_id, &entry_path, depth + 1)?;
             }
-        } else {
-            println!("{} {}", prefix, entry.file_name().to_str().unwrap());
         }
     }
     Ok(())
@@ -36,6 +47,15 @@ fn traverse_dir(path: &str, prefix: &str, depth: u64) -> anyhow::Result<()> {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    traverse_dir(&args.path, "", 0)?;
+
+    let root = Dir::new(args.path.clone(), true, true);
+    let mut tree = Arena::<Dir>::new(root);
+    let root_id = tree.root_id();
+    traverse_dir(&mut tree, root_id, &args.path, 0)?;
+    dbg!(tree.nodes.len());
+    let root = tree.get_node(0).unwrap();
+    for node in &root.children {
+        dbg!(tree.get_node(*node));
+    }
     Ok(())
 }
