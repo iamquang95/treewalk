@@ -35,12 +35,12 @@ impl<T> Arena<T> {
         0
     }
 
-    pub fn get_node(&self, id: NodeId) -> Option<&Node<T>> {
-        self.nodes.get(id)
+    pub fn get_node(&self, id: NodeId) -> anyhow::Result<&Node<T>> {
+        self.nodes.get(id).ok_or(anyhow!("Invalid node {}", id))
     }
 
-    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut Node<T>> {
-        self.nodes.get_mut(id)
+    pub fn get_node_mut(&mut self, id: NodeId) -> anyhow::Result<&mut Node<T>> {
+        self.nodes.get_mut(id).ok_or(anyhow!("Invalid node {}", id))
     }
 
     pub fn new_node(&mut self, val: T, parent_id: NodeId) -> anyhow::Result<NodeId> {
