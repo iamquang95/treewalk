@@ -1,5 +1,5 @@
+use std::fs;
 use crate::{Arena, NodeId};
-use walkdir::{DirEntry, WalkDir};
 
 #[derive(Debug)]
 pub struct Dir {
@@ -67,13 +67,13 @@ impl Dir {
         path: &str,
         depth: u64,
     ) -> anyhow::Result<()> {
-        let dir = WalkDir::new(path).max_depth(1);
+        let dir = fs::read_dir(path)?;
         for entry in dir {
             let entry = entry?;
             let entry_path = format!("{}", entry.path().display());
             if &entry_path != &path {
                 let is_folder = Dir::is_folder(&entry)?;
-                let file_name = entry.file_name().to_str().unwrap();
+                let file_name = entry.file_name().to_str().unwrap().to_owned();
 
                 let new_dir = Dir::new(file_name.to_owned(), is_folder, true);
                 let new_node_id = tree.new_node(new_dir, node_id)?;
@@ -86,7 +86,7 @@ impl Dir {
         Ok(())
     }
 
-    fn is_folder(entry: &DirEntry) -> anyhow::Result<bool> {
+    fn is_folder(entry: &fs::DirEntry) -> anyhow::Result<bool> {
         let metadata = entry.metadata()?;
         Ok(metadata.is_dir())
     }

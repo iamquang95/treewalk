@@ -16,7 +16,7 @@ struct Args {
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    let mut tree = Dir::build_dir(&args.path)?;
+    let tree = Dir::build_dir(&args.path)?;
     Dir::render_tree(&tree)?;
     Ok(())
 }
