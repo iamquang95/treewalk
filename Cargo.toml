@@ -6,4 +6,3 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.65"
 clap = { version = "4.0.8", features = ["derive"] }
-walkdir = "2.3.2"
